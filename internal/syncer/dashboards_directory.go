@@ -19,7 +19,7 @@ type DashboardsDirectory struct {
 }
 
 func (d DashboardsDirectory) saveDashboard(dashboard Dashboard) error {
-	d.existingFiles = nil
+	*d.existingFiles = nil
 
 	fullPath := filepath.Join(d.directoryPath, dashboard.filename)
 	return os.WriteFile(fullPath, []byte(dashboard.dashboard), 0644)
@@ -48,7 +48,7 @@ func (d DashboardsDirectory) listDashboards() ([]string, error) {
 }
 
 func (d DashboardsDirectory) removeDashboard(filename string) error {
-	d.existingFiles = nil
+	*d.existingFiles = nil
 
 	fullPath := filepath.Join(d.directoryPath, filename)
 	return os.Remove(fullPath)
