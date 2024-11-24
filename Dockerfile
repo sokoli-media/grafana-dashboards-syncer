@@ -9,10 +9,8 @@ COPY . .
 
 RUN go build -o /grafana-dashboards-syncer
 
-CMD ["/grafana-dashboards-syncer"]
-
 FROM debian:12-slim
 
 COPY --from=build /grafana-dashboards-syncer /grafana-dashboards-syncer
 
-CMD ["/grafana-dashboards-syncer"]
+ENTRYPOINT ["/grafana-dashboards-syncer"]

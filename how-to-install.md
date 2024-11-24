@@ -53,7 +53,7 @@ TODO: add details how to do it
 
 Mount `/dashboards` in your container to `/mnt/user/appdata/grafana/dashboards` on your UnRaid server.
 
-Add extra parameters: `--dashboard "unique-dashboard-name.json=http://where-to-get.your/dashboard.json"`
+Add post arguments: `--dashboard "unique-dashboard-name.json=http://where-to-get.your/dashboard.json"`
 
 ## Mount dashboards to Grafana
 
