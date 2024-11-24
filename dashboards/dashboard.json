@@ -95,7 +95,7 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
@@ -200,7 +200,7 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
@@ -305,7 +305,7 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
@@ -410,7 +410,7 @@
           "showLegend": true
         },
         "tooltip": {
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
@@ -436,7 +436,7 @@
           "expr": "increase(grafana_dashboards_syncer_dashboard_directory_list_from_drive[1m])",
           "hide": false,
           "instant": false,
-          "legendFormat": "source: cache",
+          "legendFormat": "source: drive",
           "range": true,
           "refId": "B"
         }
@@ -453,7 +453,7 @@
     "list": []
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
