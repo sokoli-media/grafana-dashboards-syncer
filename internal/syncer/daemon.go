@@ -21,6 +21,6 @@ func BackgroundSyncingDaemon(logger *slog.Logger, dashboards map[string]string) 
 		downloadedFiles := dashboardsSyncer.downloadDashboards()
 		dashboardsSyncer.cleanUpDashboards(downloadedFiles)
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(30 * time.Second)
 	}
 }
