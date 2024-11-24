@@ -46,7 +46,7 @@ func TestDashboardsDownloader__MultipleDashboards(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/dashboard1.json" && r.URL.Path != "/dashboard2.json" {
-			t.Errorf("Expected to request '/dashboard.json', got: %s", r.URL.Path)
+			t.Errorf("Expected to request '/dashboard1.json' or '/dashboard2.json', got: %s", r.URL.Path)
 		}
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(expectedContent[r.URL.Path]))
@@ -83,7 +83,7 @@ func TestDashboardsDownloader__FirstDashboardUrlNotWorking(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/dashboard1.json" && r.URL.Path != "/dashboard2.json" {
-			t.Errorf("Expected to request '/dashboard.json', got: %s", r.URL.Path)
+			t.Errorf("Expected to request '/dashboard1.json' or '/dashboard2.json', got: %s", r.URL.Path)
 		}
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(expectedContent[r.URL.Path]))

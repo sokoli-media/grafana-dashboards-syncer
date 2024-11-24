@@ -25,7 +25,7 @@ func runHTTPServer(logger *slog.Logger) {
 	}
 }
 
-func Run(logger *slog.Logger, dashboards map[string]string) {
+func BuildAndRun(logger *slog.Logger, dashboards map[string]string) {
 	dashboardsDirectory := getEnv("GRAFANA_DASHBOARDS_DIRECTORY", "./dashboards/")
 	go syncer.BackgroundSyncingDaemon(logger, dashboards, dashboardsDirectory)
 
