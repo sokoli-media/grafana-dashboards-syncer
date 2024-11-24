@@ -5,7 +5,16 @@ import (
 	"grafana-dashboards-downloader/internal/syncer"
 	"log/slog"
 	"net/http"
+	"os"
 )
+
+func getEnv(variableName string, defaultValue string) string {
+	value := os.Getenv(variableName)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
 
 func runHTTPServer(logger *slog.Logger) {
 	http.Handle("/metrics", promhttp.Handler())
@@ -16,8 +25,9 @@ func runHTTPServer(logger *slog.Logger) {
 	}
 }
 
-func Run(logger *slog.Logger, dashboards map[string]string) {
-	go syncer.BackgroundSyncingDaemon(logger, dashboards)
+func BuildAndRun(logger *slog.Logger, dashboards map[string]string) {
+	dashboardsDirectory := getEnv("GRAFANA_DASHBOARDS_DIRECTORY", "./dashboards/")
+	go syncer.BackgroundSyncingDaemon(logger, dashboards, dashboardsDirectory)
 
 	runHTTPServer(logger)
 }

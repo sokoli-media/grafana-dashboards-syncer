@@ -6,9 +6,9 @@ import (
 
 type DashboardsSyncer struct {
 	logger            *slog.Logger
-	downloader        DashboardsDownloader
+	downloader        *DashboardsDownloader
 	currentDashboards *CurrentDashboards
-	directory         DashboardsDirectory
+	directory         *DashboardsDirectory
 }
 
 func (d DashboardsSyncer) downloadDashboards() DownloadedDashboards {

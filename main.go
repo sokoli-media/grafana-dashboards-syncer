@@ -53,5 +53,5 @@ func main() {
 		syscall.Exit(1)
 	}
 
-	internal.Run(logger, mappedDashboards)
+	internal.BuildAndRun(logger, mappedDashboards)
 }
