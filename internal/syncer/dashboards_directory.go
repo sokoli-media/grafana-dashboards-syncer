@@ -6,8 +6,10 @@ import (
 )
 
 func NewDashboardsDirectory(dashboardsDirectory string) *DashboardsDirectory {
+	var existingFiles []string
 	return &DashboardsDirectory{
 		directoryPath: dashboardsDirectory,
+		existingFiles: &existingFiles,
 	}
 }
 
@@ -39,7 +41,7 @@ func (d DashboardsDirectory) listDashboards() ([]string, error) {
 			dashboards = append(dashboards, entry.Name())
 		}
 
-		d.existingFiles = &dashboards
+		*d.existingFiles = dashboards
 	}
 
 	return *d.existingFiles, nil
