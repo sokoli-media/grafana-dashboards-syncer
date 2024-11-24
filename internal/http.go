@@ -17,6 +17,9 @@ func getEnv(variableName string, defaultValue string) string {
 }
 
 func runHTTPServer(logger *slog.Logger) {
+	http.HandleFunc("/dashboard.json", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "/dashboards/dashboard.json")
+	})
 	http.Handle("/metrics", promhttp.Handler())
 	err := http.ListenAndServe(":9000", nil)
 	if err != nil {
