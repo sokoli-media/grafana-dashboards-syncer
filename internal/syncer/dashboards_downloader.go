@@ -7,8 +7,8 @@ import (
 	"net/http"
 )
 
-func NewDashboardsDownloader(logger *slog.Logger, dashboards map[string]string) DashboardsDownloader {
-	return DashboardsDownloader{
+func NewDashboardsDownloader(logger *slog.Logger, dashboards map[string]string) *DashboardsDownloader {
+	return &DashboardsDownloader{
 		logger:     logger,
 		dashboards: dashboards,
 	}

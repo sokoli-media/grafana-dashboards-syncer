@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-func BackgroundSyncingDaemon(logger *slog.Logger, dashboards map[string]string) {
+func BackgroundSyncingDaemon(logger *slog.Logger, dashboards map[string]string, dashboardsDirectory string) {
 	downloader := NewDashboardsDownloader(logger, dashboards)
 	currentDashboards := NewCurrentDashboards()
-	directory := NewDashboardsDirectory()
+	directory := NewDashboardsDirectory(dashboardsDirectory)
 	dashboardsSyncer := DashboardsSyncer{
 		logger:            logger,
 		downloader:        downloader,
