@@ -7,13 +7,12 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o /prometheus-exporter
+RUN go build -o /grafana-dashboards-syncer
 
-CMD ["/prometheus-exporter"]
+CMD ["/grafana-dashboards-syncer"]
 
-FROM debian:latest
+FROM debian:12-slim
 
-RUN apt-get update && apt-get install -y intel-gpu-tools && apt-get clean
-COPY --from=build /prometheus-exporter /prometheus-exporter
+COPY --from=build /grafana-dashboards-syncer /grafana-dashboards-syncer
 
-CMD ["/prometheus-exporter"]
+CMD ["/grafana-dashboards-syncer"]
