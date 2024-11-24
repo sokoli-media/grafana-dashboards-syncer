@@ -14,7 +14,7 @@ func TestDashboardsDirectory__EmptyDirectory(t *testing.T) {
 	directory := NewDashboardsDirectory(dirPath)
 	dashboards, err := directory.listDashboards()
 	require.NoError(t, err)
-	require.Equal(t, 0, len(dashboards))
+	require.Empty(t, dashboards)
 }
 
 func TestDashboardsDirectory__MultipleFiles(t *testing.T) {
