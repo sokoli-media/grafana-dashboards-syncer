@@ -18,6 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 14,
   "links": [],
   "panels": [
     {
@@ -103,8 +104,8 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "increase(grafana_dashboards_syncer_dashboard_updated[1m])",
-          "legendFormat": "updated",
+          "expr": "sum(increase(grafana_dashboards_syncer_dashboard_updated[1m]))",
+          "legendFormat": "updated dashboards",
           "range": true,
           "refId": "A"
         },
@@ -114,15 +115,15 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "increase(grafana_dashboards_syncer_dashboard_not_updated[1m])",
+          "expr": "sum(increase(grafana_dashboards_syncer_dashboard_not_updated[1m]))",
           "hide": false,
           "instant": false,
-          "legendFormat": "not updated",
+          "legendFormat": "not updated dashboards",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "Status of dashboard sync [1m]",
+      "title": "Status of dashboard sync",
       "type": "timeseries"
     },
     {
@@ -227,7 +228,7 @@
           "refId": "B"
         }
       ],
-      "title": "Modifications of dashboard directory [1m]",
+      "title": "Modifications of dashboard directory",
       "type": "timeseries"
     },
     {
@@ -291,8 +292,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
-        "w": 24,
+        "h": 10,
+        "w": 12,
         "x": 0,
         "y": 18
       },
@@ -314,10 +315,95 @@
         {
           "editorMode": "code",
           "expr": "increase(grafana_dashboards_syncer_download_success[1m])",
-          "legendFormat": "{{dashboard}} success",
+          "legendFormat": "{{dashboard}}",
           "range": true,
           "refId": "A"
+        }
+      ],
+      "title": "Successful dashboard downloading",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
         },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
         {
           "datasource": {
             "type": "prometheus",
@@ -327,12 +413,12 @@
           "expr": "increase(grafana_dashboards_syncer_download_failure[1m])",
           "hide": false,
           "instant": false,
-          "legendFormat": "{{dashboard}} failure",
+          "legendFormat": "{{dashboard}}",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "Status of dashboard downloading [1m]",
+      "title": "Failed dashboard downloading",
       "type": "timeseries"
     },
     {
@@ -399,7 +485,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 28
       },
       "id": 1,
       "options": {
@@ -441,7 +527,7 @@
           "refId": "B"
         }
       ],
-      "title": "Listing dashboard directory [1m]",
+      "title": "Listing dashboard directory",
       "type": "timeseries"
     }
   ],
@@ -460,6 +546,6 @@
   "timezone": "browser",
   "title": "Grafana Dashboards Updater",
   "uid": "grafanadashboardsupdater",
-  "version": 0,
+  "version": 1,
   "weekStart": ""
 }
