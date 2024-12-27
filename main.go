@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/md5"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -40,7 +41,10 @@ func loadConfigFromFile(logger *slog.Logger, configPath string) map[string]strin
 
 	oldStyleConfig := map[string]string{}
 	for _, dashboard := range config.Grafana.Dashboards {
-		filenameBase := md5.Sum([]byte(dashboard.HTTPSource.Url))
+		md5sum := md5.New()
+		md5sum.Write([]byte(dashboard.HTTPSource.Url))
+		filenameBase := hex.EncodeToString(md5sum.Sum(nil))
+
 		filename := fmt.Sprintf("%s.json", filenameBase)
 		oldStyleConfig[filename] = dashboard.HTTPSource.Url
 	}
