@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/md5"
 	"errors"
+	"fmt"
 	"github.com/spf13/cobra"
 	"grafana-dashboards-downloader/internal"
 	"log/slog"
@@ -23,8 +25,33 @@ func parseDashboards(dashboards []string) (map[string]string, error) {
 	return parsed, nil
 }
 
+func loadConfigFromFile(logger *slog.Logger, configPath string) map[string]string {
+	configFileContent, err := os.ReadFile(configPath)
+	if err != nil {
+		logger.Warn("couldn't load yaml config file", "error", err)
+		return map[string]string{}
+	}
+
+	config, err := internal.LoadYamlConfig(configFileContent)
+	if err != nil {
+		logger.Warn("couldn't parse yaml config file", "error", err)
+		return map[string]string{}
+	}
+
+	oldStyleConfig := map[string]string{}
+	for _, dashboard := range config.Grafana.Dashboards {
+		filenameBase := md5.Sum([]byte(dashboard.HTTPSource.Url))
+		filename := fmt.Sprintf("%s.json", filenameBase)
+		oldStyleConfig[filename] = dashboard.HTTPSource.Url
+	}
+
+	return oldStyleConfig
+}
+
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
+	configPath := os.Getenv("OPERATOR_CONFIG_PATH")
 
 	var dashboards []string
 
@@ -43,14 +70,18 @@ func main() {
 		logger.Error("couldn't start due to configuration error", "error", err)
 	}
 
-	mappedDashboards, err := parseDashboards(dashboards)
-	if err != nil {
-		logger.Error("couldn't parse dashboards", "error", err)
-		syscall.Exit(1)
-	}
-	if len(mappedDashboards) < 1 {
-		logger.Error("you must provide at least 1 dashboard")
-		syscall.Exit(1)
+	mappedDashboards := loadConfigFromFile(logger, configPath)
+	if len(mappedDashboards) == 0 {
+		logger.Info("yaml config couldn't be loaded, using cli config instead")
+		mappedDashboards, err := parseDashboards(dashboards)
+		if err != nil {
+			logger.Error("couldn't parse dashboards", "error", err)
+			syscall.Exit(1)
+		}
+		if len(mappedDashboards) < 1 {
+			logger.Error("you must provide at least 1 dashboard")
+			syscall.Exit(1)
+		}
 	}
 
 	internal.BuildAndRun(logger, mappedDashboards)
