@@ -9,7 +9,8 @@ type HTTPSourceConfig struct {
 }
 
 type GrafanaDashboardsConfig struct {
-	HTTPSource HTTPSourceConfig `yaml:"http_source"`
+	SourceType string           `yaml:"source_type"`
+	HTTPSource HTTPSourceConfig `yaml:"http_source"` // source_type: http
 }
 
 type GrafanaConfig struct {
