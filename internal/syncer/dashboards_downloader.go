@@ -1,9 +1,12 @@
 package syncer
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"grafana-dashboards-downloader/internal/config"
 	"io"
 	"log/slog"
 	"net/http"
@@ -17,7 +20,7 @@ var downloadsSuccess = promauto.NewCounterVec(
 	prometheus.CounterOpts{Name: "grafana_dashboards_syncer_download_success"},
 	[]string{"dashboard"})
 
-func NewDashboardsDownloader(logger *slog.Logger, dashboards map[string]string) *DashboardsDownloader {
+func NewDashboardsDownloader(logger *slog.Logger, dashboards []config.GrafanaDashboardsConfig) *DashboardsDownloader {
 	return &DashboardsDownloader{
 		logger:     logger,
 		dashboards: dashboards,
@@ -26,18 +29,23 @@ func NewDashboardsDownloader(logger *slog.Logger, dashboards map[string]string) 
 
 type DashboardsDownloader struct {
 	logger     *slog.Logger
-	dashboards map[string]string
+	dashboards []config.GrafanaDashboardsConfig
 }
 
 func (d DashboardsDownloader) downloadAllDashboards() []Dashboard {
 	var downloaded []Dashboard
-	for filename, url := range d.dashboards {
-		dashboardBody, err := d.downloadDashboard(url)
+	for _, dashboard := range d.dashboards {
+		md5sum := md5.New()
+		md5sum.Write([]byte(dashboard.HTTPSource.Url))
+		filenameBase := hex.EncodeToString(md5sum.Sum(nil))
+		filename := fmt.Sprintf("%s.json", filenameBase)
+
+		dashboardBody, err := d.downloadDashboard(dashboard.HTTPSource.Url)
 		if err != nil {
 			labels := prometheus.Labels{"dashboard": filename, "reason": fmt.Sprintf("%s", err)}
 			downloadsFailure.With(labels).Inc()
 
-			d.logger.Error("couldn't download dashboard", "url", url, "error", err)
+			d.logger.Error("couldn't download dashboard", "url", dashboard.HTTPSource.Url, "error", err)
 			continue
 		}
 		downloadsSuccess.With(prometheus.Labels{"dashboard": filename}).Inc()

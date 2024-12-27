@@ -1,38 +1,26 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-	"fmt"
 	"grafana-dashboards-downloader/internal"
+	"grafana-dashboards-downloader/internal/config"
 	"log/slog"
 	"os"
 )
 
-func loadConfigFromFile(logger *slog.Logger, configPath string) map[string]string {
+func loadConfigFromFile(logger *slog.Logger, configPath string) (*config.Config, error) {
 	configFileContent, err := os.ReadFile(configPath)
 	if err != nil {
 		logger.Warn("couldn't load yaml config file", "error", err)
-		return map[string]string{}
+		return nil, err
 	}
 
-	config, err := internal.LoadYamlConfig(configFileContent)
+	config, err := config.LoadYamlConfig(configFileContent)
 	if err != nil {
 		logger.Warn("couldn't parse yaml config file", "error", err)
-		return map[string]string{}
+		return nil, err
 	}
 
-	oldStyleConfig := map[string]string{}
-	for _, dashboard := range config.Grafana.Dashboards {
-		md5sum := md5.New()
-		md5sum.Write([]byte(dashboard.HTTPSource.Url))
-		filenameBase := hex.EncodeToString(md5sum.Sum(nil))
-
-		filename := fmt.Sprintf("%s.json", filenameBase)
-		oldStyleConfig[filename] = dashboard.HTTPSource.Url
-	}
-
-	return oldStyleConfig
+	return &config, err
 }
 
 func main() {
@@ -40,6 +28,9 @@ func main() {
 
 	configPath := os.Getenv("OPERATOR_CONFIG_PATH")
 
-	mappedDashboards := loadConfigFromFile(logger, configPath)
-	internal.BuildAndRun(logger, mappedDashboards)
+	config, err := loadConfigFromFile(logger, configPath)
+	if err != nil {
+		os.Exit(1)
+	}
+	internal.BuildAndRun(logger, *config)
 }

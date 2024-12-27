@@ -1,11 +1,12 @@
 package syncer
 
 import (
+	"grafana-dashboards-downloader/internal/config"
 	"log/slog"
 	"time"
 )
 
-func BackgroundSyncingDaemon(logger *slog.Logger, dashboards map[string]string, dashboardsDirectory string) {
+func BackgroundSyncingDaemon(logger *slog.Logger, dashboards []config.GrafanaDashboardsConfig, dashboardsDirectory string) {
 	downloader := NewDashboardsDownloader(logger, dashboards)
 	currentDashboards := NewCurrentDashboards()
 	directory := NewDashboardsDirectory(dashboardsDirectory)
