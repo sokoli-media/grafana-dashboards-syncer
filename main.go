@@ -38,7 +38,7 @@ func loadConfigFromFile(logger *slog.Logger, configPath string) map[string]strin
 		return map[string]string{}
 	}
 
-	var oldStyleConfig map[string]string
+	oldStyleConfig := map[string]string{}
 	for _, dashboard := range config.Grafana.Dashboards {
 		filenameBase := md5.Sum([]byte(dashboard.HTTPSource.Url))
 		filename := fmt.Sprintf("%s.json", filenameBase)
