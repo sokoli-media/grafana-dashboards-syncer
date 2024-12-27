@@ -4,12 +4,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type GrafanaHTTPSourceConfig struct {
+type HTTPSourceConfig struct {
 	Url string `yaml:"url"`
 }
 
 type GrafanaDashboardsConfig struct {
-	HTTPSource GrafanaHTTPSourceConfig `yaml:"http_source"`
+	HTTPSource HTTPSourceConfig `yaml:"http_source"`
 }
 
 type GrafanaConfig struct {

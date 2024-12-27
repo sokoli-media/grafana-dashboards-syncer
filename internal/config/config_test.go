@@ -18,12 +18,12 @@ grafana:
 	expectedConfig := Config{
 		Grafana: GrafanaConfig{Dashboards: []GrafanaDashboardsConfig{
 			{
-				HTTPSource: GrafanaHTTPSourceConfig{
+				HTTPSource: HTTPSourceConfig{
 					Url: "http://link.for/dashboard.json",
 				},
 			},
 			{
-				HTTPSource: GrafanaHTTPSourceConfig{
+				HTTPSource: HTTPSourceConfig{
 					Url: "http://link.for.another/dashboard.json",
 				},
 			},

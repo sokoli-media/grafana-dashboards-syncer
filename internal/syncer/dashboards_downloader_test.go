@@ -31,7 +31,7 @@ func TestDashboardsDownloader__SingleDashboard(t *testing.T) {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	dashboards := []config.GrafanaDashboardsConfig{
 		{
-			HTTPSource: config.GrafanaHTTPSourceConfig{
+			HTTPSource: config.HTTPSourceConfig{
 				Url: fmt.Sprintf("%s/dashboard.json", server.URL),
 			},
 		},
@@ -63,12 +63,12 @@ func TestDashboardsDownloader__MultipleDashboards(t *testing.T) {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	dashboards := []config.GrafanaDashboardsConfig{
 		{
-			HTTPSource: config.GrafanaHTTPSourceConfig{
+			HTTPSource: config.HTTPSourceConfig{
 				Url: fmt.Sprintf("%s/dashboard1.json", server.URL),
 			},
 		},
 		{
-			HTTPSource: config.GrafanaHTTPSourceConfig{
+			HTTPSource: config.HTTPSourceConfig{
 				Url: fmt.Sprintf("%s/dashboard2.json", server.URL),
 			},
 		},
@@ -118,12 +118,12 @@ func TestDashboardsDownloader__FirstDashboardUrlNotWorking(t *testing.T) {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	dashboards := []config.GrafanaDashboardsConfig{
 		{
-			HTTPSource: config.GrafanaHTTPSourceConfig{
+			HTTPSource: config.HTTPSourceConfig{
 				Url: "http://not-existing-url/dashboard1.json",
 			},
 		},
 		{
-			HTTPSource: config.GrafanaHTTPSourceConfig{
+			HTTPSource: config.HTTPSourceConfig{
 				Url: fmt.Sprintf("%s/dashboard2.json", server.URL),
 			},
 		},
