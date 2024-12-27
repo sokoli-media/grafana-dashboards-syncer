@@ -25,14 +25,16 @@ func parseDashboards(dashboards []string) (map[string]string, error) {
 	return parsed, nil
 }
 
-func loadConfigFromFile(configPath string) map[string]string {
+func loadConfigFromFile(logger *slog.Logger, configPath string) map[string]string {
 	configFileContent, err := os.ReadFile(configPath)
 	if err != nil {
+		logger.Warn("couldn't load yaml config file", "error", err)
 		return map[string]string{}
 	}
 
 	config, err := internal.LoadYamlConfig(configFileContent)
 	if err != nil {
+		logger.Warn("couldn't parse yaml config file", "error", err)
 		return map[string]string{}
 	}
 
@@ -68,8 +70,9 @@ func main() {
 		logger.Error("couldn't start due to configuration error", "error", err)
 	}
 
-	mappedDashboards := loadConfigFromFile(configPath)
+	mappedDashboards := loadConfigFromFile(logger, configPath)
 	if len(mappedDashboards) == 0 {
+		logger.Info("yaml config couldn't be loaded, using cli config instead")
 		mappedDashboards, err := parseDashboards(dashboards)
 		if err != nil {
 			logger.Error("couldn't parse dashboards", "error", err)
