@@ -23,7 +23,8 @@ type PrometheusRuleConfig struct {
 }
 
 type PrometheusConfig struct {
-	PrometheusRules []PrometheusRuleConfig `yaml:"prometheus_rules"`
+	PrometheusRulesPath string                 `yaml:"prometheus_rules_path"`
+	PrometheusRules     []PrometheusRuleConfig `yaml:"prometheus_rules"`
 }
 
 type Config struct {

@@ -4,6 +4,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"grafana-dashboards-downloader/internal/config"
 	"grafana-dashboards-downloader/internal/grafana_syncer"
+	"grafana-dashboards-downloader/internal/prometheus_syncer"
 	"log/slog"
 	"net/http"
 	"os"
@@ -32,6 +33,9 @@ func runHTTPServer(logger *slog.Logger) {
 func BuildAndRun(logger *slog.Logger, config config.Config) {
 	dashboardsDirectory := getEnv("GRAFANA_DASHBOARDS_DIRECTORY", "./dashboards/")
 	go grafana_syncer.BackgroundSyncingDaemon(logger, config.Grafana.Dashboards, dashboardsDirectory)
+
+	prometheusSyncer := prometheus_syncer.NewPrometheusSyncer(logger, config.Prometheus)
+	go prometheus_syncer.RunBackgroundSyncingDaemon(logger, prometheusSyncer)
 
 	runHTTPServer(logger)
 }

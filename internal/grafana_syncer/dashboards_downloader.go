@@ -7,9 +7,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"grafana-dashboards-downloader/internal/config"
-	"io"
+	"grafana-dashboards-downloader/internal/http_downloader"
 	"log/slog"
-	"net/http"
 )
 
 var downloadsFailure = promauto.NewCounterVec(
@@ -40,7 +39,7 @@ func (d DashboardsDownloader) downloadAllDashboards() []Dashboard {
 		filenameBase := hex.EncodeToString(md5sum.Sum(nil))
 		filename := fmt.Sprintf("%s.json", filenameBase)
 
-		dashboardBody, err := d.downloadDashboard(dashboard.HTTPSource.Url)
+		dashboardBody, err := http_downloader.Download(dashboard.HTTPSource.Url)
 		if err != nil {
 			labels := prometheus.Labels{"dashboard": filename, "reason": fmt.Sprintf("%s", err)}
 			downloadsFailure.With(labels).Inc()
@@ -52,28 +51,9 @@ func (d DashboardsDownloader) downloadAllDashboards() []Dashboard {
 
 		dashboard := Dashboard{
 			filename:  filename,
-			dashboard: dashboardBody,
+			dashboard: string(dashboardBody),
 		}
 		downloaded = append(downloaded, dashboard)
 	}
 	return downloaded
-}
-
-func (d DashboardsDownloader) downloadDashboard(url string) (string, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to fetch the file, status_code: %s", resp.Status)
-	}
-
-	content, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	return string(content), nil
 }
