@@ -17,8 +17,18 @@ type GrafanaConfig struct {
 	Dashboards []GrafanaDashboardsConfig `yaml:"dashboards"`
 }
 
+type PrometheusRuleConfig struct {
+	SourceType string           `yaml:"source_type"`
+	HTTPSource HTTPSourceConfig `yaml:"http_source"` // source_type: http
+}
+
+type PrometheusConfig struct {
+	PrometheusRules []PrometheusRuleConfig `yaml:"prometheus_rules"`
+}
+
 type Config struct {
-	Grafana GrafanaConfig `yaml:"grafana"`
+	Grafana    GrafanaConfig    `yaml:"grafana"`
+	Prometheus PrometheusConfig `yaml:"prometheus"`
 }
 
 func LoadYamlConfig(configFileContent []byte) (Config, error) {
