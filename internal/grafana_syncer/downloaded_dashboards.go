@@ -1,4 +1,4 @@
-package syncer
+package grafana_syncer
 
 func NewDownloadedDashboards() DownloadedDashboards {
 	var files []string

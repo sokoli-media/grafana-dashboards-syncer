@@ -25,4 +25,4 @@ jobs:
           platforms: linux/amd64
           context: .
           push: true
-          tags: sokolimedia/grafana-dashboards-syncer:latest
+          tags: sokolimedia/grafana-dashboards-grafana_syncer:latest
