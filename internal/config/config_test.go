@@ -42,6 +42,7 @@ grafana:
 func Test_LoadYamlConfig_Prometheus(t *testing.T) {
 	content := `
 prometheus:
+  prometheus_rules_path: /etc/prometheus/rules/
   prometheus_rules:
     - source_type: http
       http_source:
@@ -52,20 +53,22 @@ prometheus:
 `
 
 	expectedConfig := Config{
-		Prometheus: PrometheusConfig{PrometheusRules: []PrometheusRuleConfig{
-			{
-				SourceType: "http",
-				HTTPSource: HTTPSourceConfig{
-					Url: "http://link.for/file.yaml",
+		Prometheus: PrometheusConfig{
+			PrometheusRulesPath: "/etc/prometheus/rules/",
+			PrometheusRules: []PrometheusRuleConfig{
+				{
+					SourceType: "http",
+					HTTPSource: HTTPSourceConfig{
+						Url: "http://link.for/file.yaml",
+					},
 				},
-			},
-			{
-				SourceType: "http",
-				HTTPSource: HTTPSourceConfig{
-					Url: "http://link.for.another/file.yaml",
+				{
+					SourceType: "http",
+					HTTPSource: HTTPSourceConfig{
+						Url: "http://link.for.another/file.yaml",
+					},
 				},
-			},
-		}},
+			}},
 	}
 
 	actualConfig, err := LoadYamlConfig([]byte(content))
