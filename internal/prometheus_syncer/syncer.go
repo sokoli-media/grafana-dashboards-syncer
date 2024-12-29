@@ -3,6 +3,7 @@ package prometheus_syncer
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -40,6 +41,11 @@ type PrometheusSyncer struct {
 
 func (p *PrometheusSyncer) Sync() {
 	trashCollector := trash_collector.NewTrashCollector(p.config.PrometheusRulesPath)
+
+	if err := p.configurationIsValid(); err != nil {
+		p.logger.Info("ignoring prometheus sync", "reason", err)
+		return
+	}
 
 	for _, prometheusRule := range p.config.PrometheusRules {
 		p.logger.Info("syncing prometheusRule", "url", prometheusRule.HTTPSource.Url)
@@ -102,4 +108,22 @@ func (p *PrometheusSyncer) generateFilename(prometheusRule config.PrometheusRule
 	md5sum.Write([]byte(prometheusRule.HTTPSource.Url))
 	filenameBase := hex.EncodeToString(md5sum.Sum(nil))
 	return fmt.Sprintf("%s.yml", filenameBase)
+}
+
+func (p *PrometheusSyncer) configurationIsValid() error {
+	if fileStat, err := os.Stat(p.config.PrometheusRulesPath); err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("prometheus rule path '%s' doesn't exist", p.config.PrometheusRulesPath)
+		} else {
+			if !fileStat.IsDir() {
+				return fmt.Errorf("prometheus rule path '%s' is not a directory", p.config.PrometheusRulesPath)
+			}
+		}
+	}
+
+	if len(p.config.PrometheusRules) == 0 {
+		return errors.New("no prometheus rules to be updated, ignoring sync")
+	}
+
+	return nil
 }
