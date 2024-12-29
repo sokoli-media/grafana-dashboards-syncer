@@ -4,6 +4,8 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -11,6 +13,16 @@ import (
 	"unraid-monitoring-operator/internal/http_downloader"
 	"unraid-monitoring-operator/internal/trash_collector"
 )
+
+var prometheusRuleSynced = promauto.NewCounterVec(
+	prometheus.CounterOpts{Name: "unraid_monitoring_operator_prometheus_rule_synced"},
+	[]string{"url"})
+var prometheusRuleUpdated = promauto.NewCounterVec(
+	prometheus.CounterOpts{Name: "unraid_monitoring_operator_prometheus_rule_updated"},
+	[]string{"url"})
+var prometheusRuleSyncErrored = promauto.NewCounterVec(
+	prometheus.CounterOpts{Name: "unraid_monitoring_operator_prometheus_rule_sync_errored"},
+	[]string{"url", "reason"})
 
 func NewPrometheusSyncer(logger *slog.Logger, config config.PrometheusConfig) *PrometheusSyncer {
 	return &PrometheusSyncer{
@@ -30,16 +42,22 @@ func (p *PrometheusSyncer) Sync() {
 	trashCollector := trash_collector.NewTrashCollector(p.config.PrometheusRulesPath)
 
 	for _, prometheusRule := range p.config.PrometheusRules {
+		p.logger.Info("syncing prometheusRule", "url", prometheusRule.HTTPSource.Url)
 		content, err := http_downloader.Download(prometheusRule.HTTPSource.Url)
 		if err != nil {
 			p.logger.Error("couldn't download prometheus rules", "error", err, "url", prometheusRule.HTTPSource.Url)
+			prometheusRuleSyncErrored.With(
+				prometheus.Labels{
+					"url":    prometheusRule.HTTPSource.Url,
+					"reason": fmt.Sprintf("%s", err),
+				},
+			)
 			continue
 		}
 
 		filename := p.generateFilename(prometheusRule)
 
 		cachedValue, exists := p.downloadedFilesCache[filename]
-		fmt.Println(4, p.downloadedFilesCache)
 		if !exists || cachedValue != string(content) {
 			fullPath := filepath.Join(p.config.PrometheusRulesPath, filename)
 			err = os.WriteFile(fullPath, content, 0644)
@@ -50,14 +68,25 @@ func (p *PrometheusSyncer) Sync() {
 					"url", prometheusRule.HTTPSource.Url,
 					"path", fullPath,
 				)
+				prometheusRuleSyncErrored.With(
+					prometheus.Labels{
+						"url":    prometheusRule.HTTPSource.Url,
+						"reason": fmt.Sprintf("%s", err),
+					},
+				)
 				continue
 			}
 
 			p.downloadedFilesCache[filename] = string(content)
-			fmt.Println(5, p.downloadedFilesCache)
+			prometheusRuleUpdated.With(
+				prometheus.Labels{
+					"url": prometheusRule.HTTPSource.Url,
+				},
+			)
 		}
 
 		trashCollector.AddKnownFile(filename)
+		prometheusRuleSynced.With(prometheus.Labels{"url": prometheusRule.HTTPSource.Url})
 	}
 
 	err := trashCollector.PickUpTrash()
