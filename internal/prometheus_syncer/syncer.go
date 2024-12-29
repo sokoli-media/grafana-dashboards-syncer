@@ -60,6 +60,7 @@ func (p *PrometheusSyncer) Sync() {
 		cachedValue, exists := p.downloadedFilesCache[filename]
 		if !exists || cachedValue != string(content) {
 			fullPath := filepath.Join(p.config.PrometheusRulesPath, filename)
+			p.logger.Debug("writing file to disk")
 			err = os.WriteFile(fullPath, content, 0644)
 			if err != nil {
 				p.logger.Error(
@@ -85,6 +86,7 @@ func (p *PrometheusSyncer) Sync() {
 			)
 		}
 
+		p.logger.Debug("calling trash collector")
 		trashCollector.AddKnownFile(filename)
 		prometheusRuleSynced.With(prometheus.Labels{"url": prometheusRule.HTTPSource.Url})
 	}

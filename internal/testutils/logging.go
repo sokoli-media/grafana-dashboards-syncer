@@ -5,4 +5,11 @@ import (
 	"os"
 )
 
-var LoggerForTesting = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+var LoggerForTesting = slog.New(
+	slog.NewJSONHandler(
+		os.Stdout,
+		&slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		},
+	),
+)
