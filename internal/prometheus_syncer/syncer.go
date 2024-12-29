@@ -8,6 +8,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"log/slog"
+	"net/http"
 	"os"
 	"path/filepath"
 	"unraid-monitoring-operator/internal/config"
@@ -15,6 +16,8 @@ import (
 	"unraid-monitoring-operator/internal/trash_collector"
 )
 
+var prometheusSyncStarted = promauto.NewCounter(
+	prometheus.CounterOpts{Name: "unraid_monitoring_operator_prometheus_sync_started"})
 var prometheusRuleSynced = promauto.NewCounterVec(
 	prometheus.CounterOpts{Name: "unraid_monitoring_operator_prometheus_rule_synced"},
 	[]string{"url"})
@@ -24,6 +27,9 @@ var prometheusRuleUpdated = promauto.NewCounterVec(
 var prometheusRuleSyncErrored = promauto.NewCounterVec(
 	prometheus.CounterOpts{Name: "unraid_monitoring_operator_prometheus_rule_sync_errored"},
 	[]string{"url", "reason"})
+var prometheusSyncErrored = promauto.NewCounterVec(
+	prometheus.CounterOpts{Name: "unraid_monitoring_operator_prometheus_sync_errored"},
+	[]string{"reason"})
 
 func NewPrometheusSyncer(logger *slog.Logger, config config.PrometheusConfig) *PrometheusSyncer {
 	return &PrometheusSyncer{
@@ -40,13 +46,20 @@ type PrometheusSyncer struct {
 }
 
 func (p *PrometheusSyncer) Sync() {
+	prometheusSyncStarted.Inc()
 	trashCollector := trash_collector.NewTrashCollector(p.config.PrometheusRulesPath)
 
 	if err := p.configurationIsValid(); err != nil {
 		p.logger.Info("ignoring prometheus sync", "reason", err)
+		prometheusSyncErrored.With(
+			prometheus.Labels{
+				"reason": fmt.Sprintf("%s", err),
+			},
+		)
 		return
 	}
 
+	updated := false
 	for _, prometheusRule := range p.config.PrometheusRules {
 		p.logger.Info("syncing prometheusRule", "url", prometheusRule.HTTPSource.Url)
 		content, err := http_downloader.Download(prometheusRule.HTTPSource.Url)
@@ -84,6 +97,7 @@ func (p *PrometheusSyncer) Sync() {
 				continue
 			}
 
+			updated = true
 			p.downloadedFilesCache[filename] = string(content)
 			prometheusRuleUpdated.With(
 				prometheus.Labels{
@@ -97,9 +111,27 @@ func (p *PrometheusSyncer) Sync() {
 		prometheusRuleSynced.With(prometheus.Labels{"url": prometheusRule.HTTPSource.Url})
 	}
 
+	if updated && p.config.ReloadConfigUrl != "" {
+		resp, err := http.Post(p.config.ReloadConfigUrl, "", nil)
+		if err != nil || resp.StatusCode != 200 {
+			p.logger.Error("couldn't reload prometheus configuration", "error", err)
+			prometheusSyncErrored.With(
+				prometheus.Labels{
+					"reason": fmt.Sprintf("%s", err),
+				},
+			)
+		}
+		defer resp.Body.Close()
+	}
+
 	err := trashCollector.PickUpTrash()
 	if err != nil {
 		p.logger.Error("couldn't delete unknown files", "error", err)
+		prometheusSyncErrored.With(
+			prometheus.Labels{
+				"reason": fmt.Sprintf("%s", err),
+			},
+		)
 	}
 }
 

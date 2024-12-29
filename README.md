@@ -20,6 +20,7 @@ grafana:
         url: http://192.168.1.10:1234/dashboard.json
 
 prometheus:
+  reload_config_url: http://192.168.1.1:9000/-/reload  # requires "--web.enable-lifecycle" to be added to the prometheus command
   prometheus_rules_path: /prometheus_rules/
   prometheus_rules:
     - source_type: http

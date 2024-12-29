@@ -11,6 +11,7 @@ func SetupFakeServer(t *testing.T, expectedPath string, content string) *FakeSer
 		t:            t,
 		ExpectedPath: expectedPath,
 		Response:     content,
+		Requests:     []*http.Request{},
 	}
 	f.Init()
 	return f
@@ -22,10 +23,12 @@ type FakeServer struct {
 	URL          string
 	ExpectedPath string
 	Response     string
+	Requests     []*http.Request
 }
 
 func (f *FakeServer) Init() {
 	f.Server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		f.Requests = append(f.Requests, r)
 		if r.URL.Path != f.ExpectedPath {
 			f.t.Errorf("Expected to request '%s', got: %s", f.ExpectedPath, r.URL.Path)
 		}
