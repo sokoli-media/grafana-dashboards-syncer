@@ -3,11 +3,11 @@ package prometheus_syncer
 import (
 	"fmt"
 	"github.com/stretchr/testify/require"
-	config2 "grafana-dashboards-downloader/internal/config"
-	"grafana-dashboards-downloader/internal/testutils"
 	"os"
 	"path/filepath"
 	"testing"
+	config2 "unraid-monitoring-operator/internal/config"
+	"unraid-monitoring-operator/internal/testutils"
 )
 
 func Test_AddSingleFileToEmptyDirectory(t *testing.T) {

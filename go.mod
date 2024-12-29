@@ -1,4 +1,4 @@
-module grafana-dashboards-downloader
+module unraid-monitoring-operator
 
 go 1.22.0
 

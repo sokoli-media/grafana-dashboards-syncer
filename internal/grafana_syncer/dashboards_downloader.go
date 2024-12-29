@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"grafana-dashboards-downloader/internal/config"
-	"grafana-dashboards-downloader/internal/http_downloader"
 	"log/slog"
+	"unraid-monitoring-operator/internal/config"
+	"unraid-monitoring-operator/internal/http_downloader"
 )
 
 var downloadsFailure = promauto.NewCounterVec(

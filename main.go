@@ -1,10 +1,10 @@
 package main
 
 import (
-	"grafana-dashboards-downloader/internal"
-	"grafana-dashboards-downloader/internal/config"
 	"log/slog"
 	"os"
+	"unraid-monitoring-operator/internal"
+	"unraid-monitoring-operator/internal/config"
 )
 
 func loadConfigFromFile(logger *slog.Logger, configPath string) (*config.Config, error) {

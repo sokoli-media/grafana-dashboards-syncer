@@ -7,11 +7,11 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o /grafana-dashboards-syncer
+RUN go build -o /unraid-monitoring-operator
 
 FROM debian:12-slim
 
-COPY --from=build /grafana-dashboards-syncer /grafana-dashboards-syncer
+COPY --from=build /unraid-monitoring-operator /unraid-monitoring-operator
 COPY /dashboards /dashboards
 
-ENTRYPOINT ["/grafana-dashboards-syncer"]
+ENTRYPOINT ["/unraid-monitoring-operator"]

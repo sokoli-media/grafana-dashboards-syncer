@@ -1,9 +1,9 @@
 package grafana_syncer
 
 import (
-	"grafana-dashboards-downloader/internal/config"
 	"log/slog"
 	"time"
+	"unraid-monitoring-operator/internal/config"
 )
 
 func BackgroundSyncingDaemon(logger *slog.Logger, dashboards []config.GrafanaDashboardsConfig, dashboardsDirectory string) {

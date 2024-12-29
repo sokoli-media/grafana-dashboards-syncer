@@ -4,12 +4,12 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"grafana-dashboards-downloader/internal/config"
-	"grafana-dashboards-downloader/internal/http_downloader"
-	"grafana-dashboards-downloader/internal/trash_collector"
 	"log/slog"
 	"os"
 	"path/filepath"
+	"unraid-monitoring-operator/internal/config"
+	"unraid-monitoring-operator/internal/http_downloader"
+	"unraid-monitoring-operator/internal/trash_collector"
 )
 
 func NewPrometheusSyncer(logger *slog.Logger, config config.PrometheusConfig) *PrometheusSyncer {

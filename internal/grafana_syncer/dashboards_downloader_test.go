@@ -5,12 +5,12 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/stretchr/testify/require"
-	"grafana-dashboards-downloader/internal/config"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+	"unraid-monitoring-operator/internal/config"
 )
 
 func TestDashboardsDownloader__SingleDashboard(t *testing.T) {
