@@ -24,6 +24,7 @@ type PrometheusRuleConfig struct {
 
 type PrometheusConfig struct {
 	PrometheusRulesPath string                 `yaml:"prometheus_rules_path"`
+	ReloadConfigUrl     string                 `yaml:"reload_config_url"`
 	PrometheusRules     []PrometheusRuleConfig `yaml:"prometheus_rules"`
 }
 

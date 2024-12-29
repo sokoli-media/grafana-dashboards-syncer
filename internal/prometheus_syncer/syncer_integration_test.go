@@ -274,3 +274,41 @@ func Test_DontUpdateIfContentIsTheSame(t *testing.T) {
 
 	require.Equal(t, "some fake value", testutils.LoadFile(t, temporaryDirectory, hashedFilename))
 }
+
+func Test_ReloadPrometheus(t *testing.T) {
+	temporaryDirectory, err := os.MkdirTemp("", "")
+	require.NoError(t, err)
+	defer os.RemoveAll(temporaryDirectory)
+
+	server1 := testutils.SetupFakeServer(t, "/1.yml", "1.yml content")
+	file1Url := fmt.Sprintf("%s/1.yml", server1.URL)
+	defer server1.Close()
+
+	reloadServer := testutils.SetupFakeServer(t, "/-/reload", "1.yml content")
+	reloadServerUrl := fmt.Sprintf("%s/-/reload", reloadServer.URL)
+	defer reloadServer.Close()
+
+	config := config2.PrometheusConfig{
+		PrometheusRulesPath: temporaryDirectory,
+		ReloadConfigUrl:     reloadServerUrl,
+		PrometheusRules: []config2.PrometheusRuleConfig{
+			{
+				SourceType: "http",
+				HTTPSource: config2.HTTPSourceConfig{Url: file1Url},
+			},
+		},
+	}
+	syncer := NewPrometheusSyncer(testutils.LoggerForTesting, config)
+
+	syncer.Sync()
+
+	require.Len(t, reloadServer.Requests, 1)
+
+	actualRequest := reloadServer.Requests[0]
+	actualFullUrl := fmt.Sprintf("http://%s%s", actualRequest.Host, actualRequest.URL.RequestURI())
+	require.Equal(t, reloadServerUrl, actualFullUrl)
+
+	syncer.Sync()
+
+	require.Len(t, reloadServer.Requests, 1)
+}

@@ -42,6 +42,7 @@ grafana:
 func Test_LoadYamlConfig_Prometheus(t *testing.T) {
 	content := `
 prometheus:
+  reload_config_url: http://192.168.1.1:9000/-/reload
   prometheus_rules_path: /etc/prometheus/rules/
   prometheus_rules:
     - source_type: http
@@ -54,6 +55,7 @@ prometheus:
 
 	expectedConfig := Config{
 		Prometheus: PrometheusConfig{
+			ReloadConfigUrl:     "http://192.168.1.1:9000/-/reload",
 			PrometheusRulesPath: "/etc/prometheus/rules/",
 			PrometheusRules: []PrometheusRuleConfig{
 				{
