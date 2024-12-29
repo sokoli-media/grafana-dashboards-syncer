@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 )
 
 func GetHashedFilename(url string, extension string) string {
@@ -26,9 +25,14 @@ func FileExists(directory string, filename string) bool {
 	return true
 }
 
-func GetFileModificationTime(t *testing.T, directory string, filename string) time.Time {
-	fileInfo, err := os.Stat(filepath.Join(directory, filename))
+func LoadFile(t *testing.T, directory string, filename string) string {
+	dat, err := os.ReadFile(filepath.Join(directory, filename))
 	require.NoError(t, err)
 
-	return fileInfo.ModTime()
+	return string(dat)
+}
+
+func WriteFile(t *testing.T, directory string, filename string, content string) {
+	err := os.WriteFile(filepath.Join(directory, filename), []byte(content), 0644)
+	require.NoError(t, err)
 }

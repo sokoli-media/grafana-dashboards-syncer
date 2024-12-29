@@ -231,15 +231,12 @@ func Test_UpdateExistingFile(t *testing.T) {
 
 	syncer.Sync()
 
-	modificationTime := testutils.GetFileModificationTime(t, temporaryDirectory, hashedFilename)
-	t.Logf("first modification time: %s", modificationTime)
+	require.Equal(t, "1.yml content", testutils.LoadFile(t, temporaryDirectory, hashedFilename))
 
 	server1.Response = "updated content"
 	syncer.Sync()
 
-	newModificationTime := testutils.GetFileModificationTime(t, temporaryDirectory, hashedFilename)
-	t.Logf("second modification time: %s", newModificationTime)
-	require.NotEqual(t, modificationTime, newModificationTime)
+	require.Equal(t, "updated content", testutils.LoadFile(t, temporaryDirectory, hashedFilename))
 }
 
 func Test_DontUpdateIfContentIsTheSame(t *testing.T) {
@@ -265,10 +262,15 @@ func Test_DontUpdateIfContentIsTheSame(t *testing.T) {
 
 	syncer.Sync()
 
-	modificationTime := testutils.GetFileModificationTime(t, temporaryDirectory, hashedFilename)
+	require.Equal(t, "1.yml content", testutils.LoadFile(t, temporaryDirectory, hashedFilename))
+
+	// in order to test caching saved value we want to manually overwrite our file's content
+	// this way we'll verify that the file won't be overwritten if the value hasn't changes since
+	// the last download & writing to file
+	// we could also check modification time, but it's too flaky in some environments to be used here
+	testutils.WriteFile(t, temporaryDirectory, hashedFilename, "some fake value")
 
 	syncer.Sync()
 
-	newModificationTime := testutils.GetFileModificationTime(t, temporaryDirectory, hashedFilename)
-	require.Equal(t, modificationTime, newModificationTime)
+	require.Equal(t, "some fake value", testutils.LoadFile(t, temporaryDirectory, hashedFilename))
 }
