@@ -1,55 +1,26 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-	"errors"
-	"fmt"
-	"github.com/spf13/cobra"
-	"grafana-dashboards-downloader/internal"
 	"log/slog"
 	"os"
-	"strings"
-	"syscall"
+	"unraid-monitoring-operator/internal"
+	"unraid-monitoring-operator/internal/config"
 )
 
-func parseDashboards(dashboards []string) (map[string]string, error) {
-	parsed := make(map[string]string)
-	for _, dashboard := range dashboards {
-		filename, url, found := strings.Cut(dashboard, "=")
-		if !found {
-			return nil, errors.New("wrong number of parameters for dashboard: " + dashboard)
-		}
-
-		parsed[filename] = url
-	}
-	return parsed, nil
-}
-
-func loadConfigFromFile(logger *slog.Logger, configPath string) map[string]string {
+func loadConfigFromFile(logger *slog.Logger, configPath string) (*config.Config, error) {
 	configFileContent, err := os.ReadFile(configPath)
 	if err != nil {
 		logger.Warn("couldn't load yaml config file", "error", err)
-		return map[string]string{}
+		return nil, err
 	}
 
-	config, err := internal.LoadYamlConfig(configFileContent)
+	config, err := config.LoadYamlConfig(configFileContent)
 	if err != nil {
 		logger.Warn("couldn't parse yaml config file", "error", err)
-		return map[string]string{}
+		return nil, err
 	}
 
-	oldStyleConfig := map[string]string{}
-	for _, dashboard := range config.Grafana.Dashboards {
-		md5sum := md5.New()
-		md5sum.Write([]byte(dashboard.HTTPSource.Url))
-		filenameBase := hex.EncodeToString(md5sum.Sum(nil))
-
-		filename := fmt.Sprintf("%s.json", filenameBase)
-		oldStyleConfig[filename] = dashboard.HTTPSource.Url
-	}
-
-	return oldStyleConfig
+	return &config, err
 }
 
 func main() {
@@ -57,36 +28,9 @@ func main() {
 
 	configPath := os.Getenv("OPERATOR_CONFIG_PATH")
 
-	var dashboards []string
-
-	var rootCmd = &cobra.Command{
-		Use: "grafana-dashboards-syncer",
+	config, err := loadConfigFromFile(logger, configPath)
+	if err != nil {
+		os.Exit(1)
 	}
-	rootCmd.PersistentFlags().StringSliceVarP(
-		&dashboards,
-		"dashboard",
-		"d",
-		[]string{},
-		"Specify dashboard(s), format filename=url",
-	)
-
-	if err := rootCmd.Execute(); err != nil {
-		logger.Error("couldn't start due to configuration error", "error", err)
-	}
-
-	mappedDashboards := loadConfigFromFile(logger, configPath)
-	if len(mappedDashboards) == 0 {
-		logger.Info("yaml config couldn't be loaded, using cli config instead")
-		mappedDashboards, err := parseDashboards(dashboards)
-		if err != nil {
-			logger.Error("couldn't parse dashboards", "error", err)
-			syscall.Exit(1)
-		}
-		if len(mappedDashboards) < 1 {
-			logger.Error("you must provide at least 1 dashboard")
-			syscall.Exit(1)
-		}
-	}
-
-	internal.BuildAndRun(logger, mappedDashboards)
+	internal.BuildAndRun(logger, *config)
 }

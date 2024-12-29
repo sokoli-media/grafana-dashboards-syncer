@@ -1,4 +1,4 @@
-package syncer
+package grafana_syncer
 
 type Dashboard struct {
 	filename  string

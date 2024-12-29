@@ -1,4 +1,4 @@
-package syncer
+package grafana_syncer
 
 func NewCurrentDashboards() *CurrentDashboards {
 	fileNameToDashboard := make(map[string]Dashboard)

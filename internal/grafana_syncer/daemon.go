@@ -1,11 +1,12 @@
-package syncer
+package grafana_syncer
 
 import (
 	"log/slog"
 	"time"
+	"unraid-monitoring-operator/internal/config"
 )
 
-func BackgroundSyncingDaemon(logger *slog.Logger, dashboards map[string]string, dashboardsDirectory string) {
+func BackgroundSyncingDaemon(logger *slog.Logger, dashboards []config.GrafanaDashboardsConfig, dashboardsDirectory string) {
 	downloader := NewDashboardsDownloader(logger, dashboards)
 	currentDashboards := NewCurrentDashboards()
 	directory := NewDashboardsDirectory(dashboardsDirectory)

@@ -1,6 +1,8 @@
-package syncer
+package grafana_syncer
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"log/slog"
@@ -8,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"unraid-monitoring-operator/internal/config"
 )
 
 func TestDashboardsDownloader__SingleDashboard(t *testing.T) {
@@ -26,8 +29,12 @@ func TestDashboardsDownloader__SingleDashboard(t *testing.T) {
 	defer server.Close()
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	dashboards := map[string]string{
-		expectedDashboard.filename: fmt.Sprintf("%s/dashboard.json", server.URL),
+	dashboards := []config.GrafanaDashboardsConfig{
+		{
+			HTTPSource: config.HTTPSourceConfig{
+				Url: fmt.Sprintf("%s/dashboard.json", server.URL),
+			},
+		},
 	}
 	downloader := NewDashboardsDownloader(logger, dashboards)
 
@@ -35,7 +42,7 @@ func TestDashboardsDownloader__SingleDashboard(t *testing.T) {
 
 	require.NotEmpty(t, downloadedDashboards)
 	require.Len(t, downloadedDashboards, 1)
-	require.Equal(t, downloadedDashboards[0], expectedDashboard)
+	require.Equal(t, downloadedDashboards[0].dashboard, expectedDashboard.dashboard)
 }
 
 func TestDashboardsDownloader__MultipleDashboards(t *testing.T) {
@@ -54,9 +61,17 @@ func TestDashboardsDownloader__MultipleDashboards(t *testing.T) {
 	defer server.Close()
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	dashboards := map[string]string{
-		"d1.json": fmt.Sprintf("%s/dashboard1.json", server.URL),
-		"d2.json": fmt.Sprintf("%s/dashboard2.json", server.URL),
+	dashboards := []config.GrafanaDashboardsConfig{
+		{
+			HTTPSource: config.HTTPSourceConfig{
+				Url: fmt.Sprintf("%s/dashboard1.json", server.URL),
+			},
+		},
+		{
+			HTTPSource: config.HTTPSourceConfig{
+				Url: fmt.Sprintf("%s/dashboard2.json", server.URL),
+			},
+		},
 	}
 	downloader := NewDashboardsDownloader(logger, dashboards)
 
@@ -65,12 +80,22 @@ func TestDashboardsDownloader__MultipleDashboards(t *testing.T) {
 	require.NotEmpty(t, downloadedDashboards)
 	require.Len(t, downloadedDashboards, 2)
 
+	d1md5sum := md5.New()
+	d1md5sum.Write([]byte(dashboards[0].HTTPSource.Url))
+	d1filenameBase := hex.EncodeToString(d1md5sum.Sum(nil))
+	d1filename := fmt.Sprintf("%s.json", d1filenameBase)
+
+	d2md5sum := md5.New()
+	d2md5sum.Write([]byte(dashboards[1].HTTPSource.Url))
+	d2filenameBase := hex.EncodeToString(d2md5sum.Sum(nil))
+	d2filename := fmt.Sprintf("%s.json", d2filenameBase)
+
 	require.Contains(t, downloadedDashboards, Dashboard{
-		filename:  "d1.json",
+		filename:  d1filename,
 		dashboard: expectedContent["/dashboard1.json"],
 	})
 	require.Contains(t, downloadedDashboards, Dashboard{
-		filename:  "d2.json",
+		filename:  d2filename,
 		dashboard: expectedContent["/dashboard2.json"],
 	})
 }
@@ -91,9 +116,17 @@ func TestDashboardsDownloader__FirstDashboardUrlNotWorking(t *testing.T) {
 	defer server.Close()
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	dashboards := map[string]string{
-		"d1.json": "http://not-existing-url/dashboard1.json",
-		"d2.json": fmt.Sprintf("%s/dashboard2.json", server.URL),
+	dashboards := []config.GrafanaDashboardsConfig{
+		{
+			HTTPSource: config.HTTPSourceConfig{
+				Url: "http://not-existing-url/dashboard1.json",
+			},
+		},
+		{
+			HTTPSource: config.HTTPSourceConfig{
+				Url: fmt.Sprintf("%s/dashboard2.json", server.URL),
+			},
+		},
 	}
 	downloader := NewDashboardsDownloader(logger, dashboards)
 
@@ -101,8 +134,5 @@ func TestDashboardsDownloader__FirstDashboardUrlNotWorking(t *testing.T) {
 
 	require.NotEmpty(t, downloadedDashboards)
 	require.Len(t, downloadedDashboards, 1)
-	require.Equal(t, downloadedDashboards[0], Dashboard{
-		filename:  "d2.json",
-		dashboard: expectedContent["/dashboard2.json"],
-	})
+	require.Equal(t, downloadedDashboards[0].dashboard, expectedContent["/dashboard2.json"])
 }

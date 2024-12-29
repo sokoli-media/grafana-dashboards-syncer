@@ -1,4 +1,4 @@
-package syncer
+package grafana_syncer
 
 import (
 	"github.com/stretchr/testify/require"

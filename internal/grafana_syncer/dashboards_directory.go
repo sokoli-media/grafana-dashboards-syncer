@@ -1,4 +1,4 @@
-package syncer
+package grafana_syncer
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
