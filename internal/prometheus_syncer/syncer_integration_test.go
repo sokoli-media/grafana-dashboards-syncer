@@ -232,11 +232,13 @@ func Test_UpdateExistingFile(t *testing.T) {
 	syncer.Sync()
 
 	modificationTime := testutils.GetFileModificationTime(t, temporaryDirectory, hashedFilename)
+	t.Logf("first modification time: %s", modificationTime)
 
 	server1.Response = "updated content"
 	syncer.Sync()
 
 	newModificationTime := testutils.GetFileModificationTime(t, temporaryDirectory, hashedFilename)
+	t.Logf("second modification time: %s", newModificationTime)
 	require.NotEqual(t, modificationTime, newModificationTime)
 }
 
